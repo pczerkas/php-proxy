@@ -2,14 +2,12 @@
 
 namespace Proxy;
 
-use Laminas\Diactoros\Request;
 use Laminas\Diactoros\Response;
 use PHPUnit\Framework\TestCase;
 use Proxy\Adapter\Dummy\DummyAdapter;
 use Psr\Http\Message\RequestInterface;
 use Laminas\Diactoros\ServerRequestFactory;
 use Proxy\Exception\UnexpectedValueException;
-use PHPUnit\Framework\InvalidArgumentException;
 
 class ProxyTest extends TestCase
 {
@@ -131,5 +129,92 @@ class ProxyTest extends TestCase
 
         $proxy = new Proxy($adapter);
         $proxy->forward($request)->to($url);
+    }
+
+    /**
+     * @test
+     */
+    public function to_sends_request_with_port_subdirectory()
+    {
+        $request = (new ServerRequestFactory)->createServerRequest('GET', 'http://localhost/path?query=yes');
+        $url = 'https://www.example.com:3000/proxy/';
+
+        $adapter = $this->getMockBuilder(DummyAdapter::class)
+            ->getMock();
+
+        $verifyParam = $this->callback(function (RequestInterface $request) use ($url) {
+            return $request->getUri() == 'https://www.example.com:3000/proxy/path?query=yes';
+        });
+
+        $adapter->expects($this->once())
+            ->method('send')
+            ->with($verifyParam)
+            ->willReturn(new Response);
+
+        $proxy = new Proxy($adapter);
+        $proxy->forward($request)->to($url);
+    }
+
+    /**
+     * @test
+     */
+    public function to_throws_exception_with_port_subdirectory_invalid_stripRequestUriPathPrefix()
+    {
+        $request = (new ServerRequestFactory)->createServerRequest('GET', 'http://localhost/api/path?query=yes');
+        $url = 'https://www.example.com:3000/proxy/';
+        $stripRequestUriPathPrefix = 'api';
+
+        $this->expectException(UnexpectedValueException::class);
+        $this->proxy->forward($request)->to($url, $stripRequestUriPathPrefix);
+    }
+
+    /**
+     * @test
+     */
+    public function to_sends_request_with_port_subdirectory_matching_stripRequestUriPathPrefix()
+    {
+        $request = (new ServerRequestFactory)->createServerRequest('GET', 'http://localhost/api/path?query=yes');
+        $url = 'https://www.example.com:3000/proxy/';
+        $stripRequestUriPathPrefix = 'api/';
+
+        $adapter = $this->getMockBuilder(DummyAdapter::class)
+            ->getMock();
+
+        $verifyParam = $this->callback(function (RequestInterface $request) use ($url) {
+            return $request->getUri() == 'https://www.example.com:3000/proxy/path?query=yes';
+        });
+
+        $adapter->expects($this->once())
+            ->method('send')
+            ->with($verifyParam)
+            ->willReturn(new Response);
+
+        $proxy = new Proxy($adapter);
+        $proxy->forward($request)->to($url, $stripRequestUriPathPrefix);
+    }
+
+    /**
+     * @test
+     */
+    public function to_sends_request_with_port_subdirectory_nonmatching_stripRequestUriPathPrefix()
+    {
+        $request = (new ServerRequestFactory)->createServerRequest('GET', 'http://localhost/api1/path?query=yes');
+        $url = 'https://www.example.com:3000/proxy/';
+        $stripRequestUriPathPrefix = 'api2/';
+
+        $adapter = $this->getMockBuilder(DummyAdapter::class)
+            ->getMock();
+
+        $verifyParam = $this->callback(function (RequestInterface $request) use ($url) {
+            return $request->getUri() == 'https://www.example.com:3000/proxy/api1/path?query=yes';
+        });
+
+        $adapter->expects($this->once())
+            ->method('send')
+            ->with($verifyParam)
+            ->willReturn(new Response);
+
+        $proxy = new Proxy($adapter);
+        $proxy->forward($request)->to($url, $stripRequestUriPathPrefix);
     }
 }

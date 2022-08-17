@@ -1,10 +1,10 @@
 {
-    "name": "jenssegers/proxy",
+    "name": "pczerkas/proxy",
     "description": "Proxy library that forwards requests to the desired url and returns the response.",
     "keywords": [
         "proxy"
     ],
-    "homepage": "https://github.com/jenssegers/php-proxy",
+    "homepage": "https://github.com/pczerkas/php-proxy",
     "license": "MIT",
     "authors": [
         {
@@ -15,6 +15,10 @@
             "name": "Ota Mares",
             "email": "o.mares@rebuy.de",
             "homepage": "http://www.rebuy.de"
+        },
+        {
+            "name": "Przemyslaw Czerkas",
+            "email": "pczerkas@gmail.com"
         }
     ],
     "require": {

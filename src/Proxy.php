@@ -4,11 +4,9 @@ namespace Proxy;
 
 use Relay\RelayBuilder;
 use Laminas\Diactoros\Uri;
-use Laminas\Diactoros\Response;
 use Proxy\Adapter\AdapterInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use GuzzleHttp\Exception\ClientException;
 use Proxy\Exception\UnexpectedValueException;
 
@@ -57,7 +55,7 @@ class Proxy
      * @throws UnexpectedValueException
      * @return ResponseInterface
      */
-    public function to($target)
+    public function to(string $target, string $stripRequestUriPathPrefix='')
     {
         if ($this->request === null) {
             throw new UnexpectedValueException('Missing request instance.');
@@ -70,6 +68,23 @@ class Proxy
             ->withScheme($target->getScheme())
             ->withHost($target->getHost())
             ->withPort($target->getPort());
+
+        if ($stripRequestUriPathPrefix) {
+            if (substr($stripRequestUriPathPrefix, -1) !== '/') {
+                throw new UnexpectedValueException('stripRequestUriPathPrefix must end with "/".');
+            }
+
+            $path = $uri->getPath();
+            $stripRequestUriPathPrefix = ltrim($stripRequestUriPathPrefix, '/');
+            if ($path && $stripRequestUriPathPrefix) {
+                $pathIsRooted = substr($path, 0, 1) === '/';
+                $pos = strpos($path, $stripRequestUriPathPrefix);
+                if ($pathIsRooted && 1 === $pos || !$pathIsRooted && 0 === $pos) {
+                    $path = substr_replace($path, '', $pos, strlen($stripRequestUriPathPrefix));
+                    $uri = $uri->withPath($path);
+                }
+            }
+        }
 
         // Check for subdirectory.
         if ($path = $target->getPath()) {

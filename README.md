@@ -34,7 +34,7 @@ $proxy->filter(new RemoveEncodingFilter());
 
 try {
     // Forward the request and get the response.
-    $response = $proxy->forward($request)->to('http://example.com');
+    $response = $proxy->forward($request)->to('http://example.com', 'api/');
 
     // Output response to the browser.
     (new Laminas\HttpHandlerRunner\Emitter\SapiEmitter)->emit($response);

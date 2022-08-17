@@ -1,7 +1,5 @@
 # PHP Proxy
 
-[![Build Status](http://img.shields.io/travis/jenssegers/php-proxy.svg)](https://travis-ci.org/jenssegers/php-proxy) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/php-proxy.svg)](https://coveralls.io/r/jenssegers/php-proxy?branch=master)
-
 This is a HTTP/HTTPS proxy script that forwards requests to a different server and returns the response. The Proxy class uses PSR7 request/response objects as input/output, and uses Guzzle to do the actual HTTP request.
 
 ## Installation
@@ -9,7 +7,7 @@ This is a HTTP/HTTPS proxy script that forwards requests to a different server a
 Install using composer:
 
 ```
-composer require jenssegers/proxy
+composer require pczerkas/proxy
 ```
 
 ## Example
@@ -65,5 +63,5 @@ $response = $proxy
 
 		return $response;
 	})
-	->to('http://example.com');
+	->to('http://example.com', 'api/');
 ```

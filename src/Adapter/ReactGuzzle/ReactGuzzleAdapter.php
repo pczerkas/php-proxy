@@ -1,6 +1,6 @@
 <?php
 
-namespace Proxy\Adapter\React;
+namespace Proxy\Adapter\ReactGuzzle;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
